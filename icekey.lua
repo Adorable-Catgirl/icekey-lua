@@ -131,7 +131,7 @@ local function ice_key_encypt(ik, ptext)
 	local i
 	local l, r
 
-	l = (ptext:byte(1) << 24) |
+	--[[l = (ptext:byte(1) << 24) |
 		(ptext:byte(2) << 16) |
 		(ptext:byte(3) << 8) |
 		(ptext:byte(4))
@@ -139,7 +139,9 @@ local function ice_key_encypt(ik, ptext)
 	r = (ptext:byte(5) << 24) |
 		(ptext:byte(6) << 16) |
 		(ptext:byte(7) << 8) |
-		(ptext:byte(8))
+		(ptext:byte(8))]]
+
+	l, r = string.unpack(">I4I4", ptext)
 
 	for i=1, ik.rounds, 2 do
 		l = l ~ ice_f(r, ik.keysched[i])
@@ -160,15 +162,17 @@ local function ice_key_decrypt(ik, ctext)
 	local i
 	local l, r
 
-	l = (ctext:byte(1) << 24) |
-		(ctext:byte(2) << 16) |
-		(ctext:byte(3) << 8) |
-		(ctext:byte(4))
+	--[[l = (ptext:byte(1) << 24) |
+		(ptext:byte(2) << 16) |
+		(ptext:byte(3) << 8) |
+		(ptext:byte(4))
 
-	r = (ctext:byte(5) << 24) |
-		(ctext:byte(6) << 16) |
-		(ctext:byte(7) << 8) |
-		(ctext:byte(8))
+	r = (ptext:byte(5) << 24) |
+		(ptext:byte(6) << 16) |
+		(ptext:byte(7) << 8) |
+		(ptext:byte(8))]]
+
+	l, r = string.unpack(">I4I4", ctext)
 
 	for i=ik.rounds-1, 0, -2 do
 		l = l ~ ice_f(r, ik.keysched[i+1])
@@ -252,10 +256,10 @@ return function(level)
 			ice_key_destroy(ik)
 		end,
 		keysize = function()
-			ice_key_key_size(ik)
+			return ice_key_key_size(ik)
 		end,
 		blocksize = function()
-			ice_key_block_size(ik)
+			return ice_key_block_size(ik)
 		end,
 		setkey = function(key)
 			if (#key ~= ice_key_key_size(ik)) then return nil, "input data size does not match key size" end
